@@ -1,18 +1,26 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
 
-        ThreadGroup mainGroup = new ThreadGroup("main group");
+
         String[] threads = {"поток 1", "поток 2", "поток 3", "поток 4"};
+        List<MyCallable> list = new ArrayList<>();
 
-        System.out.println("Создаю потоки...");
-        for (String thread : threads){
-            new MyThread(mainGroup, thread).start();
+        for (String thread : threads) {
+            list.add(new MyCallable(thread));
         }
 
-        Thread.sleep(15_000);
+        final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        mainGroup.interrupt();
-        System.out.println("Завершаю все потоки.");
+        threadPool.invokeAll(list);
+
+        final int resultOfTask = threadPool.invokeAny(list);
+        System.out.println("Количество отправленных сообщений быстрейшим потоком : " + resultOfTask);
+
+        threadPool.shutdown();
     }
 }
